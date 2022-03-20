@@ -15,7 +15,7 @@ bumps <- sapply(x, function(k) dnorm((xgrid - k)/h)/(n * h))
 ## for the individual observations with bandwidth h = 0.4.
 pdf("kdectrb.pdf", height = 7, width = 7)
 plot(xgrid, rowSums(bumps), ylab = expression(hat(f)(x)),
-     type = "l", xlab = "x", lwd = 2, col = "red", 
+     type = "l", xlab = "x", lwd = 1, col = "red", 
      main = "")
 out <- apply(bumps, 2, function(b) lines(xgrid, b, col = "blue"))
 dev.off()
