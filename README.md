@@ -3,13 +3,15 @@
 This repo contains the codes, images, report and slides for the project of the course - `MTH516A: Non-Parametric Inference` at IIT Kanpur during the academic year 2022-2023.
 
 ## Project Members
-  - Arkajyoti Bhattacharjee
+  - Arkajyoti Bhattacharjee 
   - Nitin Garg
   - Suchismita Roy
 
 ## Project Title
+`Nonparametric Kernel Density Estimation for the Metropolis-Hastings Algorithm`
 
 ## Abstract
+> In this report, we ...
 
 ## Contents
 
