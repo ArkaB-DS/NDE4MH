@@ -85,11 +85,11 @@ for (i in 1:samp)
   # mat4[,i] <- one_sample_4()
 }
 
-kernel <- function(x) {
-  # Probability that left <= x <= right
-  probability <- pnorm(2, mean = 0, sd = 1) - pnorm(-2, mean = 0, sd = 1)
-  return((x >= -2 & x <= 2) * dnorm(x, mean = 0, sd = 1) / probability)
-}
+# kernel <- function(x) {
+#   # Probability that left <= x <= right
+#   probability <- pnorm(2, mean = 0, sd = 1) - pnorm(-2, mean = 0, sd = 1)
+#   return((x >= -2 & x <= 2) * dnorm(x, mean = 0, sd = 1) / probability)
+# }
 
 fact <- 1/((pnorm(2) - pnorm(-2))*sqrt(2*pi))
 
@@ -155,7 +155,7 @@ I2val <- function(x, gk)
   return(val)
 }
 
-mise.h_mh.hat <- function(x)
+h_mh.hat <- function(x)
 {
   sample.sd <- sd(x)
   
@@ -171,10 +171,29 @@ mise.h_mh.hat <- function(x)
   g2 <- abs((2*A*K4_0)/(mu_21*I3*n))^(1/7)
   I2 <- I2val(x, g2)
   
-  h_mh.hat <- ((A*mu_02)/(mu_21*mu_21*I2*n))^(1/5)
-  val <- ((mu_21*mu_21*I2*(A^4)*(mu_02^4))^(1/5))*(5/(4*(n^(4/5))))
+  h_mh <- ((A*mu_02)/(mu_21*mu_21*I2*n))^(1/5)
+  # val <- ((mu_21*mu_21*I2*(A^4)*(mu_02^4))^(1/5))*(5/(4*(n^(4/5))))
   
-  return(val)
+  return(h_mh)
+}
+
+mise <- function(x, h)
+{
+  bins <- seq(from = -2, to = 2, length.out = 201)
+  sum <- 0
+  for(i in 1:200)
+  {
+    len <- bins[i+1] - bins[i]
+    mid <- (bins[i+1] + bins[i])/2
+    ph.hat <- 0
+    for(j in 1:n)
+    {
+      ph.hat <- ph.hat + expo((x[j] - mid)/h)
+    }
+    ph.hat <- ph.hat/(n*h)
+    sum <- sum + len*(dnorm(mid) - ph.hat)^2
+  }
+  return(sum)
 }
 
 mise.h_mh.hat.avg <- 0
@@ -182,10 +201,11 @@ mise.h_mh.hat.avg <- 0
 for(i in 1:samp)
 {
   print(i)
-  mise.h_mh.hat.avg <- mise.h_mh.hat.avg + mise.h_mh.hat(mat1[,i])
+  h <- h_mh.hat(mat1[,i])
+  mise.h_mh.hat.avg <- mise.h_mh.hat.avg + mise(mat1[,i], h)
 }
 mise.h_mh.hat.avg <- mise.h_mh.hat.avg/samp
-mise.h_mh.hat.avg
+mise.h_mh.hat.avg*1e4
 
 
 save(mat1, mat2, mat3, mat4, "simu_rep.RData")
