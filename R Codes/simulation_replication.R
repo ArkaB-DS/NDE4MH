@@ -1,5 +1,6 @@
 set.seed(42)
 library(extremefit)
+library(Deriv)
 one_sample_1 <- function(len = 1e5)
 {
   x <- numeric(len)
@@ -67,16 +68,17 @@ one_sample_4 <- function(len = 1e5)
   return(x)
 }
 
-n <- 1e5
+n <- 1e3
+samp <- 1e3
 
-mat1 <- matrix(0, nrow = 1e5, ncol = 1e3)
+mat1 <- matrix(0, nrow = n, ncol = samp)
 # mat2 <- matrix(0, nrow = 1e5, ncol = 1e3)
 # mat3 <- matrix(0, nrow = 1e5, ncol = 1e3)
 # mat4 <- matrix(0, nrow = 1e5, ncol = 1e3)
 
-for (i in 1:1e3)
+for (i in 1:samp)
 {
-  mat1[,i] <- one_sample_1()
+  mat1[,i] <- one_sample_1(n)
   print(i)
   # mat2[,i] <- one_sample_2()
   # mat3[,i] <- one_sample_3()
@@ -95,11 +97,11 @@ expo <- function(x) exp(-(x^2)/2)*fact
 
 A.hat <- function(x)
 {
-  T <- numeric(length = 1e5)
-  for(i in 1:1e5)
+  T <- numeric(length = n)
+  for(i in 1:n)
   {
     j <- i
-    while(x[i] == x[j] && j <= 1e5)
+    while(x[i] == x[j] && j <= n)
     {
       T[i] <- T[i] + 1
       j <- j + 1
@@ -134,8 +136,8 @@ I3val <- function(x, gk)
   vec <- as.vector(sapply(x, function (y) y - x))
   vec <- vec/gk
   vec <- vec[vec > -2 && vec < 2]
-  
-  
+  vec <- Deriv6(vec)
+  val <- sum(vec)
   val <- -val/(n*n*(gk^7))
   return(val)
 }
@@ -143,29 +145,25 @@ I3val <- function(x, gk)
 I2val <- function(x, gk)
 {
   val <- 0
-  for(i in 1:n)
-  {
-    for(j in 1:n)
-    {
-      t <- (x[i] - x[j])/gk
-      if(t > -2 && t < 2)
-      {
-        val <- val + Deriv4(t)
-      }
-    }
-  }
   
-  val <- -val/(n*n*(gk^5))
+  vec <- as.vector(sapply(x, function (y) y - x))
+  vec <- vec/gk
+  vec <- vec[vec > -2 && vec < 2]
+  vec <- Deriv4(vec)
+  val <- sum(vec)
+  val <- val/(n*n*(gk^5))
   return(val)
 }
 
 mise.h_mh.hat <- function(x)
 {
   sample.sd <- sd(x)
+  
   I4 <- factorial(8)/((2*sample.sd)^9)*factorial(4)*(sqrt(pi))
   
-  K6_0 <- Deriv(Deriv(Deriv(Deriv(Deriv(Deriv(expo))))))(0)
-  K4_0 <- Deriv(Deriv(Deriv(Deriv(expo))))(0)
+  K6_0 <- Deriv6(0)
+  K4_0 <- Deriv4(0)
+  
   A <- A.hat(x)
   g3 <- abs((2*A*K6_0)/(mu_21*I4*n))^(1/9)
   I3 <- I3val(x, g3)
@@ -181,12 +179,12 @@ mise.h_mh.hat <- function(x)
 
 mise.h_mh.hat.avg <- 0
 
-for(i in 1:n)
+for(i in 1:samp)
 {
   print(i)
   mise.h_mh.hat.avg <- mise.h_mh.hat.avg + mise.h_mh.hat(mat1[,i])
-  mise.h_mh.hat.avg <- mise.h_mh.hat.avg/n
 }
+mise.h_mh.hat.avg <- mise.h_mh.hat.avg/samp
 mise.h_mh.hat.avg
 
 
