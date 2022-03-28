@@ -1,4 +1,5 @@
 set.seed(42)
+library(extremefit)
 one_sample_1 <- function(len = 1e5)
 {
   x <- numeric(len)
@@ -66,18 +67,128 @@ one_sample_4 <- function(len = 1e5)
   return(x)
 }
 
+n <- 1e5
+
 mat1 <- matrix(0, nrow = 1e5, ncol = 1e3)
-mat2 <- matrix(0, nrow = 1e5, ncol = 1e3)
-mat3 <- matrix(0, nrow = 1e5, ncol = 1e3)
-mat4 <- matrix(0, nrow = 1e5, ncol = 1e3)
+# mat2 <- matrix(0, nrow = 1e5, ncol = 1e3)
+# mat3 <- matrix(0, nrow = 1e5, ncol = 1e3)
+# mat4 <- matrix(0, nrow = 1e5, ncol = 1e3)
 
 for (i in 1:1e3)
 {
   mat1[,i] <- one_sample_1()
-  mat2[,i] <- one_sample_2()
-  mat3[,i] <- one_sample_3()
-  mat4[,i] <- one_sample_4()
+  print(i)
+  # mat2[,i] <- one_sample_2()
+  # mat3[,i] <- one_sample_3()
+  # mat4[,i] <- one_sample_4()
 }
+
+kernel <- function(x) {
+  # Probability that left <= x <= right
+  probability <- pnorm(2, mean = 0, sd = 1) - pnorm(-2, mean = 0, sd = 1)
+  return((x >= -2 & x <= 2) * dnorm(x, mean = 0, sd = 1) / probability)
+}
+
+fact <- 1/((pnorm(2) - pnorm(-2))*sqrt(2*pi))
+
+expo <- function(x) exp(-(x^2)/2)*fact
+
+A.hat <- function(x)
+{
+  T <- numeric(length = 1e5)
+  for(i in 1:1e5)
+  {
+    j <- i
+    while(x[i] == x[j] && j <= 1e5)
+    {
+      T[i] <- T[i] + 1
+      j <- j + 1
+    }
+  }
+  
+  return(sum(2*T - 1)/n)
+}
+
+bins <- seq(from = -2, to = 2, length.out = 402)
+
+mu_02 <- 0
+mu_21 <- 0
+
+for(i in 1:401)
+{
+  len <- bins[i + 1] - bins[i]
+  mid <- (bins[i + 1] + bins[i])/2
+
+  mu_02 <- mu_02 + len*(expo(mid)^2)
+  mu_21 <- mu_21 + len*((mid^2) * expo(mid))
+}
+
+Deriv6 <- Deriv(Deriv(Deriv(Deriv(Deriv(Deriv(expo))))))
+
+Deriv4 <- Deriv(Deriv(Deriv(Deriv(expo))))
+
+I3val <- function(x, gk)
+{
+  val <- 0
+  
+  vec <- as.vector(sapply(x, function (y) y - x))
+  vec <- vec/gk
+  vec <- vec[vec > -2 && vec < 2]
+  
+  
+  val <- -val/(n*n*(gk^7))
+  return(val)
+}
+
+I2val <- function(x, gk)
+{
+  val <- 0
+  for(i in 1:n)
+  {
+    for(j in 1:n)
+    {
+      t <- (x[i] - x[j])/gk
+      if(t > -2 && t < 2)
+      {
+        val <- val + Deriv4(t)
+      }
+    }
+  }
+  
+  val <- -val/(n*n*(gk^5))
+  return(val)
+}
+
+mise.h_mh.hat <- function(x)
+{
+  sample.sd <- sd(x)
+  I4 <- factorial(8)/((2*sample.sd)^9)*factorial(4)*(sqrt(pi))
+  
+  K6_0 <- Deriv(Deriv(Deriv(Deriv(Deriv(Deriv(expo))))))(0)
+  K4_0 <- Deriv(Deriv(Deriv(Deriv(expo))))(0)
+  A <- A.hat(x)
+  g3 <- abs((2*A*K6_0)/(mu_21*I4*n))^(1/9)
+  I3 <- I3val(x, g3)
+  
+  g2 <- abs((2*A*K4_0)/(mu_21*I3*n))^(1/7)
+  I2 <- I2val(x, g2)
+  
+  h_mh.hat <- ((A*mu_02)/(mu_21*mu_21*I2*n))^(1/5)
+  val <- ((mu_21*mu_21*I2*(A^4)*(mu_02^4))^(1/5))*(5/(4*(n^(4/5))))
+  
+  return(val)
+}
+
+mise.h_mh.hat.avg <- 0
+
+for(i in 1:n)
+{
+  print(i)
+  mise.h_mh.hat.avg <- mise.h_mh.hat.avg + mise.h_mh.hat(mat1[,i])
+  mise.h_mh.hat.avg <- mise.h_mh.hat.avg/n
+}
+mise.h_mh.hat.avg
+
 
 save(mat1, mat2, mat3, mat4, "simu_rep.RData")
 
