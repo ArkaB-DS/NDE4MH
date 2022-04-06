@@ -95,6 +95,10 @@ fact <- 1/((pnorm(2) - pnorm(-2))*sqrt(2*pi))
 
 expo <- function(x) exp(-(x^2)/2)*fact
 
+mu02fn <- function(x) expo(x)^2
+
+mu21fn <- function(x) x*x*expo(x)
+
 A.hat <- function(x)
 {
   T <- numeric(length = n)
@@ -111,48 +115,119 @@ A.hat <- function(x)
   return(sum(2*T - 1)/n)
 }
 
-bins <- seq(from = -2, to = 2, length.out = 402)
 
-mu_02 <- 0
-mu_21 <- 0
-
-for(i in 1:401)
-{
-  len <- bins[i + 1] - bins[i]
-  mid <- (bins[i + 1] + bins[i])/2
-
-  mu_02 <- mu_02 + len*(expo(mid)^2)
-  mu_21 <- mu_21 + len*((mid^2) * expo(mid))
-}
+mu_02 <- integrate(mu02fn, -2, 2)$value
+mu_21 <- integrate(mu21fn, -2, 2)$value
 
 Deriv6 <- Deriv(Deriv(Deriv(Deriv(Deriv(Deriv(expo))))))
 
 Deriv4 <- Deriv(Deriv(Deriv(Deriv(expo))))
 
-I3val <- function(x, gk)
+I23val <- function(x, gk, num)
 {
-  val <- 0
+  M <- 400
+  g <- seq(min(x), max(x), length.out = M + 2)
+  g <- g[2:M+1]
+  c <- numeric(length = M)
+  j <- 2
+  xs <- sort(x)
   
-  vec <- as.vector(sapply(x, function (y) y - x))
-  vec <- vec/gk
-  vec <- vec[vec > -2 && vec < 2]
-  vec <- Deriv6(vec)
-  val <- sum(vec)
-  val <- -val/(n*n*(gk^7))
-  return(val)
-}
+  for(i in 1:n)
+  {
+    while(xs[i] > g[j] && j < M)
+    {
+      j <- j + 1
+    }
+    c[j-1] <- c[j-1] + (g[j] - xs[i])/(g[j] - g[j-1])
+    c[j] <- c[j] + (xs[i] - g[j-1])/(g[j] - g[j-1])
+  }
 
-I2val <- function(x, gk)
-{
-  val <- 0
-  
-  vec <- as.vector(sapply(x, function (y) y - x))
-  vec <- vec/gk
-  vec <- vec[vec > -2 && vec < 2]
-  vec <- Deriv4(vec)
-  val <- sum(vec)
-  val <- val/(n*n*(gk^5))
-  return(val)
+  if(num == 3)
+  {
+    # L <- min(floor((2*gk*(M-1))/(max(x) - min(x))), M - 1)
+    # print(L)
+    kappa <- numeric(length = M)
+    
+    for(i in 1:M)
+    {
+      temp <- ((max(x) - min(x))*i)/((M - 1)*gk)
+      if(temp > -2 && temp < 2)
+      {
+        kappa[i] <- Deriv6(temp)/(n*gk)
+      }
+      else
+      {
+        kappa[i] <- 0
+      }
+    }
+    kappa0 <- Deriv6(0)/(n*gk)
+    # print(kappa)
+    val <- 0
+    for(j in 1:M)
+    {
+      inner <- 0
+      for(l in (1-M):(M-1))
+      {
+        if((j-l) >= 1 && (j-l) <= M)
+        {
+          if(l == 0)
+          {
+            inner <- inner + c[j-l]*kappa0
+          }
+          else
+          {
+            inner <- inner + c[j-l]*kappa[abs(l)]
+          }
+        }
+      }
+      val <- val + inner*c[j]
+    }
+    print(val)
+    val <- val/(n*(gk^6))
+    return(val)
+  }
+  else{
+    # L <- min(floor((2*gk*(M-1))/(max(x) - min(x))), M - 1)
+    kappa <- numeric(length = M)
+    
+    for(i in 1:M)
+    {
+      temp <- ((max(x) - min(x))*i)/((M - 1)*gk)
+      if(temp > -2 && temp < 2)
+      {
+        kappa[i] <- Deriv4(temp)/(n*gk)
+      }
+      else
+      {
+        kappa[i] <- 0
+      }
+    }
+    kappa0 <- Deriv4(0)/(n*gk)
+    # print(kappa)
+    val <- 0
+    for(j in 1:M)
+    {
+      inner <- 0
+      for(l in (1-M):(M-1))
+      {
+        if((j-l) >= 1 && (j-l) <= M)
+        {
+          if(l == 0)
+          {
+            inner <- inner + c[j-l]*kappa0
+          }
+          else
+          {
+            inner <- inner + c[j-l]*kappa[abs(l)]
+          }
+        }
+      }
+      val <- val + inner*c[j]
+    }
+    print(val)
+    val <- val/(n*(gk^4))
+    return(val)
+  }
 }
 
 h_mh.hat <- function(x)
@@ -166,10 +241,10 @@ h_mh.hat <- function(x)
   
   A <- A.hat(x)
   g3 <- abs((2*A*K6_0)/(mu_21*I4*n))^(1/9)
-  I3 <- I3val(x, g3)
-  
+  I3 <- I23val(x, g3, 3)
+
   g2 <- abs((2*A*K4_0)/(mu_21*I3*n))^(1/7)
-  I2 <- I2val(x, g2)
+  I2 <- I23val(x, g2, 2)
   
   h_mh <- ((A*mu_02)/(mu_21*mu_21*I2*n))^(1/5)
   # val <- ((mu_21*mu_21*I2*(A^4)*(mu_02^4))^(1/5))*(5/(4*(n^(4/5))))
