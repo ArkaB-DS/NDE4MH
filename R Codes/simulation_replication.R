@@ -68,30 +68,27 @@ one_sample_4 <- function(len = 1e5)
   return(x)
 }
 
-n <- 1e3
+n <- 1e5
 samp <- 1e3
 
 mat1 <- matrix(0, nrow = n, ncol = samp)
-# mat2 <- matrix(0, nrow = 1e5, ncol = 1e3)
-# mat3 <- matrix(0, nrow = 1e5, ncol = 1e3)
-# mat4 <- matrix(0, nrow = 1e5, ncol = 1e3)
+mat2 <- matrix(0, nrow = 1e5, ncol = 1e3)
+mat3 <- matrix(0, nrow = 1e5, ncol = 1e3)
+mat4 <- matrix(0, nrow = 1e5, ncol = 1e3)
 
 for (i in 1:samp)
 {
-  mat1[,i] <- one_sample_1(n)
   print(i)
-  # mat2[,i] <- one_sample_2()
-  # mat3[,i] <- one_sample_3()
-  # mat4[,i] <- one_sample_4()
+  mat1[,i] <- one_sample_1(n)
+  mat2[,i] <- one_sample_2()
+  mat3[,i] <- one_sample_3()
+  mat4[,i] <- one_sample_4()
 }
 
-# kernel <- function(x) {
-#   # Probability that left <= x <= right
-#   probability <- pnorm(2, mean = 0, sd = 1) - pnorm(-2, mean = 0, sd = 1)
-#   return((x >= -2 & x <= 2) * dnorm(x, mean = 0, sd = 1) / probability)
-# }
+save(mat1, mat2, mat3, mat4, "simu_rep.RData")
 
-fact <- 1/((pnorm(2) - pnorm(-2))*sqrt(2*pi))
+# fact <- 1/((pnorm(2) - pnorm(-2))*sqrt(2*pi))
+fact <- 1/sqrt(2*pi)
 
 expo <- function(x) exp(-(x^2)/2)*fact
 
@@ -126,8 +123,8 @@ Deriv4 <- Deriv(Deriv(Deriv(Deriv(expo))))
 I23val <- function(x, gk, num)
 {
   M <- 400
-  g <- seq(min(x), max(x), length.out = M + 2)
-  g <- g[2:M+1]
+  g <- seq(min(x), max(x), length.out = M)
+  # g <- g[2:M+1]
   c <- numeric(length = M)
   j <- 2
   xs <- sort(x)
@@ -151,7 +148,7 @@ I23val <- function(x, gk, num)
     for(i in 1:M)
     {
       temp <- ((max(x) - min(x))*i)/((M - 1)*gk)
-      if(temp > -2 && temp < 2)
+      if(TRUE)
       {
         kappa[i] <- Deriv6(temp)/(n*gk)
       }
@@ -182,9 +179,9 @@ I23val <- function(x, gk, num)
       }
       val <- val + inner*c[j]
     }
-    print(val)
+    # print(val)
     val <- val/(n*(gk^6))
-    return(val)
+    return(-val)
   }
   else{
     # L <- min(floor((2*gk*(M-1))/(max(x) - min(x))), M - 1)
@@ -193,7 +190,7 @@ I23val <- function(x, gk, num)
     for(i in 1:M)
     {
       temp <- ((max(x) - min(x))*i)/((M - 1)*gk)
-      if(temp > -2 && temp < 2)
+      if(TRUE)
       {
         kappa[i] <- Deriv4(temp)/(n*gk)
       }
@@ -224,7 +221,7 @@ I23val <- function(x, gk, num)
       }
       val <- val + inner*c[j]
     }
-    print(val)
+    # print(val)
     val <- val/(n*(gk^4))
     return(val)
   }
@@ -246,9 +243,9 @@ h_mh.hat <- function(x)
   g2 <- abs((2*A*K4_0)/(mu_21*I3*n))^(1/7)
   I2 <- I23val(x, g2, 2)
   
-  h_mh <- ((A*mu_02)/(mu_21*mu_21*I2*n))^(1/5)
-  # val <- ((mu_21*mu_21*I2*(A^4)*(mu_02^4))^(1/5))*(5/(4*(n^(4/5))))
+  h_mh <- (abs((A*mu_02)/(mu_21*mu_21*I2*n)))^(1/5)
   
+  # return((A^(1/5))*(density(x)$bw))
   return(h_mh)
 }
 
@@ -273,17 +270,21 @@ mise <- function(x, h)
 
 mise.h_mh.hat.avg <- 0
 
+h_mh_all <- numeric(samp)
 for(i in 1:samp)
 {
   print(i)
-  h <- h_mh.hat(mat1[,i])
-  mise.h_mh.hat.avg <- mise.h_mh.hat.avg + mise(mat1[,i], h)
+  h_mh_all[i] <- h_mh.hat(mat4[,i])
+  print(h_mh_all[i])
+  # add <- mise(mat1[,i], h_mh_all[i])
+  # print(add*1e4)
+  # mise.h_mh.hat.avg <- mise.h_mh.hat.avg + add
 }
-mise.h_mh.hat.avg <- mise.h_mh.hat.avg/samp
-mise.h_mh.hat.avg*1e4
+# mise.h_mh.hat.avg <- mise.h_mh.hat.avg/samp
+# mise.h_mh.hat.avg*1e4
 
 
-save(mat1, mat2, mat3, mat4, "simu_rep.RData")
+save(mat1, "simu_rep.RData")
 
 pdf("samplePaths.pdf", height = 10, width = 10)
 par(mfrow = c(4, 1))
