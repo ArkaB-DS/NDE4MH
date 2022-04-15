@@ -97,7 +97,7 @@ lines(grid, vals, type = "l", col = "green", lty = 4)
 legend("topright", legend = c("true density", "KDE(h_iid)",
                               "KDE(h_mh)", "KDE(h_bk)"),
        lty = c(1,2,3,4), col = c("red", "black", "blue", "green"),
-       cex = 0.8, lwd = c(1,2,1,2))
+       cex = 0.8, lwd = c(1,2,1,1))
 
 
 dev.off()
