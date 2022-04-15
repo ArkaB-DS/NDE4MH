@@ -320,9 +320,9 @@ h_bk <- function(x)
 kde_bk <- function(x)
 {
   h.bk <- h_bk(x)
-  M <- 200
+  M <- 1e3
   
-  grid <- seq(from = -2, to = 2, length.out = M)
+  grid <- seq(from = -3, to = 3, length.out = M)
   vals <- numeric(length = M)
   
   for(i in 1:M)
@@ -336,7 +336,29 @@ kde_bk <- function(x)
     }
     vals[i] <- sum/n
   }
-  lines(grid, vals, type = "l", col = "green")
+  lines(grid, vals, type = "l", col = "green", lty = 1)
+}
+
+kde_mh <- function(x)
+{
+  h <- h_mh.hat(x)
+  M <- 1e3
+  
+  grid <- seq(from = -3, to = 3, length.out = M)
+  vals <- numeric(length = M)
+  
+  for(i in 1:M)
+  {
+    print(i)
+    u <- grid[i]
+    sum <- 0
+    for(j in 1:n)
+    {
+      sum <- sum + expo((x[j] - u)/h)/h
+    }
+    vals[i] <- sum/n
+  }
+  lines(grid, vals, type = "l", col = "blue", lty = 3)
 }
 
 mise <- function(x, h)

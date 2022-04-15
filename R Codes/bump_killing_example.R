@@ -4,6 +4,10 @@
 
 # h <- 0.5
 ## generate one sample
+fact <- 1/sqrt(2*pi)
+
+expo <- function(x) exp(-(x^2)/2)*fact
+
 one_sample <- function(len = 1e5)
 {
   x <- numeric(len) + 2
@@ -70,10 +74,31 @@ Tis <- function(x)
 }
 
 A_bk <- Tis(x$mc)
-h_bk <-  A_bk^(1/5)*h_iid
+h.bk <-  A_bk^(1/5)*h_iid
+M <- 1e3
+
+grid <- seq(from = -3, to = 3, length.out = M)
+vals <- numeric(length = M)
+
+for(i in 1:M)
+{
+  print(i)
+  u <- grid[i]
+  sum <- 0
+  for(j in 1:n)
+  {
+    sum <- sum + expo((x$mc[j] - u)/h.bk[j])/h.bk[j]
+  }
+  vals[i] <- sum/n
+}
+
+lines(grid, vals, type = "l", col = "green", lty = 4)
+
 legend("topright", legend = c("true density", "KDE(h_iid)",
-                              "KDE(h_mh)"),
-       lty = c(1,2,3), col = c("red", "black", "blue"),
-       cex = 0.8, lwd = c(1,2,1))
+                              "KDE(h_mh)", "KDE(h_bk)"),
+       lty = c(1,2,3,4), col = c("red", "black", "blue", "green"),
+       cex = 0.8, lwd = c(1,2,1,2))
+
+
 dev.off()
 
