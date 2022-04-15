@@ -320,18 +320,19 @@ h_bk <- function(x)
 kde_bk <- function(x)
 {
   h.bk <- h_bk(x)
+  M <- 200
   
-  grid <- seq(from = min(x), to = max(x), length.out = 500)
+  grid <- seq(from = -2, to = 2, length.out = M)
+  vals <- numeric(length = M)
   
-  vals <- numeric(length = 500)
-  
-  for(i in 1:500)
+  for(i in 1:M)
   {
+    print(i)
     u <- grid[i]
     sum <- 0
     for(j in 1:n)
     {
-      sum <- sum + expo((x[i] - u)/h.bk[i])/h.bk[i]
+      sum <- sum + expo((x[j] - u)/h.bk[j])/h.bk[j]
     }
     vals[i] <- sum/n
   }
