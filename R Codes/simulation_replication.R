@@ -1,6 +1,38 @@
 set.seed(42)
 library(extremefit)
 library(Deriv)
+library(VGAM)
+library(sn)
+
+rm(list=ls())
+len <- 1e4
+prob <- numeric(len)
+x <- numeric(len)
+cnt <- 0
+for (i in 2:len)
+{
+  y <- rsn(1, xi = x[i-1], omega = 4, alpha = 1)
+  if(runif(1) < dsc(y, xi = 0, omega = 3, alpha = 3)/dsc(x[i-1], xi = 0, omega = 3, alpha = 3)*
+     dsn(x[i-1], xi = y, omega = 4, alpha = 1)/
+     dsn(y, xi = x[i-1], omega = 4, alpha = 1)
+  )
+  {
+    x[i] <- y
+    prob[i] <- 1
+    cnt <- cnt + 1
+  }else{
+    x[i] <- x[i-1]
+    cnt <- 0
+  }
+  if(cnt >= 100)
+  {
+    print("Rejections")
+  }
+}
+#plot(density(x))
+mean(prob)
+ts.plot(x)
+
 one_sample_1 <- function(len = 1e5)
 {
   x <- numeric(len)
@@ -85,7 +117,7 @@ for (i in 1:samp)
   mat4[,i] <- one_sample_4()
 }
 
-save(mat1, mat2, mat3, mat4, "simu_rep.RData")
+save(mat1, mat2, mat3, mat4, file = "simu_rep.RData")
 
 # fact <- 1/((pnorm(2) - pnorm(-2))*sqrt(2*pi))
 fact <- 1/sqrt(2*pi)
@@ -249,6 +281,63 @@ h_mh.hat <- function(x)
   return(h_mh)
 }
 
+h_bk <- function(x)
+{
+  T <- numeric(length = n)
+  for(i in 1:n)
+  {
+    j <- i
+    while(x[i] == x[j] && j <= n)
+    {
+      T[i] <- T[i] + 1
+      j <- j + 1
+    }
+  }
+  A <- sum(2*T - 1)/n
+  
+  sample.sd <- sd(x)
+  
+  I4 <- factorial(8)/((2*sample.sd)^9)*factorial(4)*(sqrt(pi))
+  
+  K6_0 <- Deriv6(0)
+  K4_0 <- Deriv4(0)
+
+  g3 <- abs((2*A*K6_0)/(mu_21*I4*n))^(1/9)
+  I3 <- I23val(x, g3, 3)
+  
+  g2 <- abs((2*A*K4_0)/(mu_21*I3*n))^(1/7)
+  I2 <- I23val(x, g2, 2)
+  
+  h.bk <- numeric(length = n)
+  for(i in 1:n)
+  {
+    h.bk[i] <- (abs(((2*T[i] - 1)*mu_02)/(mu_21*mu_21*I2*n)))^(1/5)
+  }
+  
+  return(h.bk)
+}
+
+kde_bk <- function(x)
+{
+  h.bk <- h_bk(x)
+  
+  grid <- seq(from = min(x), to = max(x), length.out = 500)
+  
+  vals <- numeric(length = 500)
+  
+  for(i in 1:500)
+  {
+    u <- grid[i]
+    sum <- 0
+    for(j in 1:n)
+    {
+      sum <- sum + expo((x[i] - u)/h.bk[i])/h.bk[i]
+    }
+    vals[i] <- sum/n
+  }
+  plot(grid, vals, type = "l")
+}
+
 mise <- function(x, h)
 {
   bins <- seq(from = -2, to = 2, length.out = 201)
@@ -283,8 +372,14 @@ for(i in 1:samp)
 # mise.h_mh.hat.avg <- mise.h_mh.hat.avg/samp
 # mise.h_mh.hat.avg*1e4
 
+for(i in 1:samp)
+{
+  print(i)
+  
+}
 
-save(mat1, "simu_rep.RData")
+
+save(mat1, mat2, mat3, mat4, file = "simu_rep.RData")
 
 pdf("samplePaths.pdf", height = 10, width = 10)
 par(mfrow = c(4, 1))
