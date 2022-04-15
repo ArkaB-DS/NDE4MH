@@ -1,14 +1,11 @@
-## Motivator for bump-killing
+## Motivating example
 # target: Gamma(3, 1)
-# proposal: N(x, 100)
+# proposal: gamma(3,1.7)
 
-# h <- 0.5
-## generate one sample
 fact <- 1/sqrt(2*pi)
-
 expo <- function(x) exp(-(x^2)/2)*fact
 
-n <- 1e5
+## generate one sample
 
 one_sample <- function(len = 1e5)
 {
@@ -28,13 +25,9 @@ one_sample <- function(len = 1e5)
 }
 
 x <- one_sample()
-pdf("bk_trace_motivator.pdf", width = 7, height = 7)
-ts.plot(x)
-dev.off()
-pdf("bk_density_plots_motivator.pdf", height = 7, width =7)
-plot(density(x), ylab = expression(hat(f[h])), xlab = "",
-     main = "", lty = 2, ylim = c(0, 0.45), lwd = 2)
-lines(density(rgamma(1e5, 3, 1)), col = "red")
+n<- length(x)
+
+
 h_iid <- density(x)$bw
 A.hat <- function(x)
 {
@@ -52,9 +45,9 @@ A.hat <- function(x)
   
   return(sum(2*T - 1)/n)
 }
+
 A <- A.hat(x)
 h_mh <- A^(1/5)*h_iid
-lines(density(x, bw = h_mh), col = "blue", lty = 3)
 
 Tis <- function(x)
 {
@@ -75,8 +68,8 @@ Tis <- function(x)
 
 A_bk <- Tis(x)
 h.bk <-  A_bk^(1/5)*h_iid
-M <- 1e3
 
+M <- 1e3
 grid <- seq(from = 0, to = 12, length.out = M)
 vals <- numeric(length = M)
 
@@ -91,14 +84,17 @@ for(i in 1:M)
   }
   vals[i] <- sum/n
 }
-
-lines(grid, vals, type = "l", col = "green", lty = 4)
-
+pdf("motivation.pdf", height = 5, width = 10)
+par(mfrow = c(1,2))
+ts.plot(x[9.5e4:1e5])
+plot(density(x), ylab = expression(hat(f[h])), xlab = "",
+     main = "", lty = 2, ylim = c(0, 0.3))
+lines(density(rgamma(1e5, 3, 1)), col = "red")
+lines(density(x, bw = h_mh), col = "blue", lty = 5)
+lines(grid, vals, type = "l", col = "seagreen", lty = 1)
 legend("topright", legend = c("true density", "KDE(h_iid)",
                               "KDE(h_mh)", "KDE(h_bk)"),
-       lty = c(1,2,3,4), col = c("red", "black", "blue", "green"),
-       cex = 0.8, lwd = c(1,2,1,2))
-
-
+       lty = c(1,2,5,1), col = c("red", "black", "blue", "seagreen"),
+       cex = 0.8)
 dev.off()
 
