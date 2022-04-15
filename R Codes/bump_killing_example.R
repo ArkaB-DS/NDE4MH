@@ -70,7 +70,15 @@ Tis <- function(x)
 A_bk <- Tis(x$mc)
 h_bk <-  A_bk^(1/5)*h_iid
 legend("topright", legend = c("true density", "KDE(h_iid)",
+<<<<<<< HEAD
                               "KDE(h_mh)"),
        lty = c(1,2,3), col = c("red", "black", "blue"),
        cex = 0.8, lwd = c(1,2,1))
+=======
+                              "KDE(h_mh)", "KDE(h_bk)"),
+       lty = c(1,2,3,4), col = c("red", "black", "blue", "green"),
+       cex = 0.8, lwd = c(1,2,1,1))
+
+
+>>>>>>> 5638625e029c665814ce3666489983c97fc9e05e
 dev.off()
