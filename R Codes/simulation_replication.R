@@ -336,7 +336,7 @@ kde_bk <- function(x)
     }
     vals[i] <- sum/n
   }
-  plot(grid, vals, type = "l")
+  lines(grid, vals, type = "l", col = "green")
 }
 
 mise <- function(x, h)

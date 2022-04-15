@@ -22,6 +22,7 @@ one_sample <- function(len = 1e5)
   }
   return(list(mc=x, acc.prob = mean(prob)))
 }
+
 x <- one_sample()
 pdf("bk_trace.pdf", width = 7, height = 7)
 ts.plot(x$mc)
@@ -67,6 +68,7 @@ Tis <- function(x)
   
   return(2*T-1)
 }
+
 A_bk <- Tis(x$mc)
 h_bk <-  A_bk^(1/5)*h_iid
 legend("topright", legend = c("true density", "KDE(h_iid)",
@@ -74,3 +76,4 @@ legend("topright", legend = c("true density", "KDE(h_iid)",
        lty = c(1,2,3), col = c("red", "black", "blue"),
        cex = 0.8, lwd = c(1,2,1))
 dev.off()
+
