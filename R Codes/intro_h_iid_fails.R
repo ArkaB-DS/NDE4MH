@@ -1,6 +1,6 @@
 ## Example to show that h_iid fails and h_mh works
 # target: N(0,1)
-# proposal: N(x, 100)
+# proposal: N(10, 100)
 
 
 
@@ -8,15 +8,13 @@
 one_sample <- function(len = 1e5)
 {
   x <- numeric(len) + 0.5
-  prob <- numeric(len)
   for (i in 2:len)
   {
-    y <- rnorm(1, x[i-1], 100)
+    y <- rnorm(1, 10, 100)
     if(runif(1) < dnorm(y)/dnorm(x[i-1])*
        dnorm(x[i-1], 10, 100)/dnorm(y, 10, 100))
     {
       x[i] <- y
-      prob[i]<-1
     }else{
       x[i] <- x[i-1]
     }

@@ -1,6 +1,6 @@
 ## Example to show that h_iid fails and h_mh works
 # target: N(0, 1)
-# proposal: N(x, 100)
+# proposal: skew-N(0,0.54,10)
 
 library(VGAM)
 
