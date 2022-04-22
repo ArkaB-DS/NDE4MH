@@ -23,7 +23,7 @@ one_sample <- function(len = 1e5)
   }
   return(x)
 }
-
+set.seed(43)
 x <- one_sample()
 n<- length(x)
 
@@ -84,7 +84,7 @@ for(i in 1:M)
   }
   vals[i] <- sum/n
 }
-pdf("motivation.pdf", height = 5, width = 10)
+pdf("./Figure/Problem4$.pdf", height = 5, width = 10)
 par(mfrow = c(1,2))
 ts.plot(x[9.5e4:1e5])
 plot(density(x), ylab = expression(hat(f[h])), xlab = "",

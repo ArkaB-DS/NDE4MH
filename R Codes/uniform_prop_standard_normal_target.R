@@ -1,21 +1,20 @@
 ## Example to show that h_iid fails and h_mh works
 # target: N(0, 1)
-# proposal: N(x, 100)
+# proposal: U(x-3,x)
 
- 
+
 # fact <- 1/sqrt(2*pi)
 # expo <- function(x) exp(-(x^2)/2)*fact
 
 ## generate one sample
 one_sample <- function(len = 1e5)
 {
-  x <- numeric(len) + 0.5
+  x <- numeric(len)+6
   prob <- numeric(len)
   for (i in 2:len)
   {
-    y <- rnorm(1, x[i-1], 100)
-    if(runif(1) < dnorm(y)/dnorm(x[i-1])*
-       dnorm(x[i-1], 10, 100)/dnorm(y, 10, 100))
+    y <- runif(1,-3+x[i-1],x[i-1])
+    if(runif(1) < dnorm(y)/dnorm(x[i-1])*runif(x[i-1],-3+y,0+y)/runif(y,-3+x[i-1],0+x[i-1]))
     {
       x[i] <- y
       prob[i]<-1
@@ -83,11 +82,11 @@ h_mh <- A^(1/5)*h_iid
 #   vals[i] <- sum/n
 # }
 
-pdf("./Figures/h_iid_fails_plots.pdf", height = 5, width = 10)
-par(mfrow=c(1,2))
-ts.plot(x$mc[5e4:1e5], ylab="MC")
+# pdf("h_iid_fails_plots.pdf", height = 5, width = 10)
+# par(mfrow=c(1,2))
+# ts.plot(x$mc[5e4:1e5], ylab="MC")
 plot(density(x$mc), ylab = expression(hat(f[h])), xlab = "x",
-     main = "", lty = 2, ylim = c(0, 0.6), col = "seagreen")
+     main = "", lty = 2, ylim = c(0, 0.5), col = "seagreen")
 lines(density(rnorm(1e5)), col = "red")
 lines(density(x$mc, bw = h_mh), col = "blue", lty = 4)
 # lines(grid, vals, type = "l", col = "green", lty = 4)
@@ -95,4 +94,4 @@ legend("topright", legend = c("true density", "KDE(h_iid)",
                               "KDE(h_mh)"),
        lty = c(1,2,4), col = c("red", "seagreen", "blue"),
        cex = 0.8)
-dev.off()
+# dev.off()
