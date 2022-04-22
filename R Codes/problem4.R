@@ -84,7 +84,7 @@ for(i in 1:M)
   }
   vals[i] <- sum/n
 }
-pdf("./Figure/Problem4$.pdf", height = 5, width = 10)
+pdf("./Figures/Problem4.pdf", height = 5, width = 10)
 par(mfrow = c(1,2))
 ts.plot(x[9.5e4:1e5])
 plot(density(x), ylab = expression(hat(f[h])), xlab = "",
