@@ -11,9 +11,7 @@ This repo contains the codes, images, report and slides for the project of the c
 `Nonparametric Kernel Density Estimation for the Metropolis-Hastings Algorithm`
 
 ## Abstract
-> In this report, we ...
-
-## Contents
+> In this report, we discuss how the rejection step of the Metropolis-Hastings algorithm affects kernel density estimation. We elaborate on the theory developed by [1] by providing extensive proofs and explore applications exhibiting their efficiency in various problems.
 
 ## Primary Reference
 
