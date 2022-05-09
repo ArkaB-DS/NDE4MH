@@ -8,7 +8,7 @@ This repo contains the codes, images, report and slides for the project of the c
   - Suchismita Roy
 
 ## Project Title
-`Nonparametric Kernel Density Estimation for the Metropolis-Hastings Algorithm`
+`Nonparametric Kernel Density Estimation for the Metropolis-Hastings Algorithm` [`Report`](https://github.com/ArkaB-DS/NDE4MH/blob/main/Nonparametric_Project.pdf) [`Slides`](https://github.com/ArkaB-DS/NDE4MH/blob/main/Nonparametric_Project__slides_.pdf)
 
 ## Abstract
 > In this report, we discuss how the rejection step of the Metropolis-Hastings algorithm affects kernel density estimation. We elaborate on the theory developed by [1] by providing extensive proofs and explore applications exhibiting their efficiency in various problems.
